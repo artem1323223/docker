@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем конфиг Nginx
-COPY nginx/default.conf /etc/nginx/sites-available/default
+# Копируем конфиг Nginx (из корня)
+COPY default.conf /etc/nginx/sites-available/default
 RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 # Копируем файлы проекта
