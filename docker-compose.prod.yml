@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: apt_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - apt_network
+    restart: always
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: apt_php
+    volumes:
+      - ./www:/var/www/html
+    networks:
+      - apt_network
+    restart: always
+
+  mysql:
+    image: mysql:8.0
+    container_name: apt_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./www/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - apt_network
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: apt_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - apt_network
+    restart: always
+
+volumes:
+  mysql_data:
+
+networks:
+  apt_network:
+    driver: bridge
